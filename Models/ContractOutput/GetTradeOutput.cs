@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using Nethereum.ABI.FunctionEncoding.Attributes;
 
-namespace MonadNftMarket.Models.ContractOutput;
+namespace SepoliaNftMarket.Models.ContractOutput;
 
 [FunctionOutput]
 public class GetTradeOutput : IFunctionOutputDTO

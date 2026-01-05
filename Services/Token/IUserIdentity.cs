@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.SignalR;
 
-namespace MonadNftMarket.Services.Token;
+namespace SepoliaNftMarket.Services.Token;
 
 public interface IUserIdentity
 {

@@ -2,7 +2,7 @@
 using System.Numerics;
 using Microsoft.EntityFrameworkCore;
 
-namespace MonadNftMarket.Models;
+namespace SepoliaNftMarket.Models;
 
 [Owned]
 public class Peer

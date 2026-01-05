@@ -5,12 +5,12 @@ using System.Numerics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using MonadNftMarket.Context;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using SepoliaNftMarket.Context;
 
 #nullable disable
 
-namespace MonadNftMarket.Migrations
+namespace SepoliaNftMarket.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
     partial class ApiDbContextModelSnapshot : ModelSnapshot
@@ -24,7 +24,7 @@ namespace MonadNftMarket.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("MonadNftMarket.Models.History", b =>
+            modelBuilder.Entity("SepoliaNftMarket.Models.History", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -77,7 +77,7 @@ namespace MonadNftMarket.Migrations
                     b.ToTable("history", (string)null);
                 });
 
-            modelBuilder.Entity("MonadNftMarket.Models.IndexerState", b =>
+            modelBuilder.Entity("SepoliaNftMarket.Models.IndexerState", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -109,7 +109,7 @@ namespace MonadNftMarket.Migrations
                         });
                 });
 
-            modelBuilder.Entity("MonadNftMarket.Models.Listing", b =>
+            modelBuilder.Entity("SepoliaNftMarket.Models.Listing", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -174,7 +174,7 @@ namespace MonadNftMarket.Migrations
                     b.ToTable("listings", (string)null);
                 });
 
-            modelBuilder.Entity("MonadNftMarket.Models.Notification", b =>
+            modelBuilder.Entity("SepoliaNftMarket.Models.Notification", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -217,7 +217,7 @@ namespace MonadNftMarket.Migrations
                     b.ToTable("notifications", (string)null);
                 });
 
-            modelBuilder.Entity("MonadNftMarket.Models.Trade", b =>
+            modelBuilder.Entity("SepoliaNftMarket.Models.Trade", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -254,23 +254,23 @@ namespace MonadNftMarket.Migrations
                     b.ToTable("trades", (string)null);
                 });
 
-            modelBuilder.Entity("MonadNftMarket.Models.History", b =>
+            modelBuilder.Entity("SepoliaNftMarket.Models.History", b =>
                 {
-                    b.HasOne("MonadNftMarket.Models.Listing", "Listing")
+                    b.HasOne("SepoliaNftMarket.Models.Listing", "Listing")
                         .WithMany()
                         .HasForeignKey("ListingId")
                         .HasPrincipalKey("ListingId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_history_listings_listing_id");
 
-                    b.HasOne("MonadNftMarket.Models.Trade", "Trade")
+                    b.HasOne("SepoliaNftMarket.Models.Trade", "Trade")
                         .WithMany()
                         .HasForeignKey("TradeId")
                         .HasPrincipalKey("TradeId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_history_trades_trade_id");
 
-                    b.OwnsOne("MonadNftMarket.Models.EventMetadata", "EventMetadata", b1 =>
+                    b.OwnsOne("SepoliaNftMarket.Models.EventMetadata", "EventMetadata", b1 =>
                         {
                             b1.Property<Guid>("HistoryId")
                                 .HasColumnType("uuid")
@@ -314,14 +314,14 @@ namespace MonadNftMarket.Migrations
                     b.Navigation("Trade");
                 });
 
-            modelBuilder.Entity("MonadNftMarket.Models.Listing", b =>
+            modelBuilder.Entity("SepoliaNftMarket.Models.Listing", b =>
                 {
-                    b.HasOne("MonadNftMarket.Models.Trade", null)
+                    b.HasOne("SepoliaNftMarket.Models.Trade", null)
                         .WithMany("Listings")
                         .HasForeignKey("TradeId")
                         .HasConstraintName("fk_listings_trades_trade_id");
 
-                    b.OwnsOne("MonadNftMarket.Models.NftMetadata", "NftMetadata", b1 =>
+                    b.OwnsOne("SepoliaNftMarket.Models.NftMetadata", "NftMetadata", b1 =>
                         {
                             b1.Property<Guid>("ListingId")
                                 .HasColumnType("uuid")
@@ -384,9 +384,9 @@ namespace MonadNftMarket.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MonadNftMarket.Models.Trade", b =>
+            modelBuilder.Entity("SepoliaNftMarket.Models.Trade", b =>
                 {
-                    b.OwnsOne("MonadNftMarket.Models.Peer", "From", b1 =>
+                    b.OwnsOne("SepoliaNftMarket.Models.Peer", "From", b1 =>
                         {
                             b1.Property<Guid>("TradeId")
                                 .HasColumnType("uuid")
@@ -417,7 +417,7 @@ namespace MonadNftMarket.Migrations
                                 .HasConstraintName("fk_trades_trades_id");
                         });
 
-                    b.OwnsOne("MonadNftMarket.Models.Peer", "To", b1 =>
+                    b.OwnsOne("SepoliaNftMarket.Models.Peer", "To", b1 =>
                         {
                             b1.Property<Guid>("TradeId")
                                 .HasColumnType("uuid")
@@ -455,7 +455,7 @@ namespace MonadNftMarket.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MonadNftMarket.Models.Trade", b =>
+            modelBuilder.Entity("SepoliaNftMarket.Models.Trade", b =>
                 {
                     b.Navigation("Listings");
                 });

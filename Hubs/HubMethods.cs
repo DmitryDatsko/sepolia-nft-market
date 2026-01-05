@@ -1,4 +1,4 @@
-﻿namespace MonadNftMarket.Hubs;
+﻿namespace SepoliaNftMarket.Hubs;
 
 public static class HubMethods
 {

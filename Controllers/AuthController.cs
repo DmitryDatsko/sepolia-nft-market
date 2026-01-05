@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Nethereum.Signer;
-using MonadNftMarket.Models.DTO;
-using MonadNftMarket.Configuration;
-using MonadNftMarket.Services.Token;
+using SepoliaNftMarket.Configuration;
+using SepoliaNftMarket.Models.DTO;
+using SepoliaNftMarket.Services.Token;
 
-namespace MonadNftMarket.Controllers;
+namespace SepoliaNftMarket.Controllers;
 
 [ApiController]
 [Route("api/auth")]

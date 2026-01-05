@@ -1,9 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.Extensions.Options;
-using MonadNftMarket.Configuration;
+using SepoliaNftMarket.Configuration;
 
-namespace MonadNftMarket.Services.Token;
+namespace SepoliaNftMarket.Services.Token;
 
 public class UserIdentity(IOptions<EnvVariables> env) : IUserIdentity
 {

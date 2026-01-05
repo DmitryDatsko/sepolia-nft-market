@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using MonadNftMarket.Context;
-using MonadNftMarket.Hubs;
-using MonadNftMarket.Models;
+using SepoliaNftMarket.Context;
+using SepoliaNftMarket.Hubs;
+using SepoliaNftMarket.Models;
 
-namespace MonadNftMarket.Services.Notifications;
+namespace SepoliaNftMarket.Services.Notifications;
 
 public class NotificationService : INotificationService
 {

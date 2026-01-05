@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace MonadNftMarket.Models.DTO;
+namespace SepoliaNftMarket.Models.DTO;
 
 public class TradeMetadata
 {

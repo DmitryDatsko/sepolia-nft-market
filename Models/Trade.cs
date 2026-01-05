@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace MonadNftMarket.Models;
+namespace SepoliaNftMarket.Models;
 public class Trade
 {
     public Guid Id { get; init; } = Guid.CreateVersion7();

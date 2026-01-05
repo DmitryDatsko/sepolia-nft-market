@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Numerics;
 
-namespace MonadNftMarket.Models;
+namespace SepoliaNftMarket.Models;
 
 public class Listing
 {

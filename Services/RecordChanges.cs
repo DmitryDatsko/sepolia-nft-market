@@ -1,39 +1,42 @@
 ﻿using System.Numerics;
 using Microsoft.EntityFrameworkCore;
-using MonadNftMarket.Context;
-using MonadNftMarket.Models;
-using MonadNftMarket.Models.ContractEvents;
-using MonadNftMarket.Models.DTO;
-using MonadNftMarket.Providers;
-using MonadNftMarket.Services.EventParser;
-using MonadNftMarket.Services.Monad;
-using MonadNftMarket.Services.Notifications;
 using Nethereum.Util;
 using Nethereum.Web3;
+using SepoliaNftMarket.Context;
+using SepoliaNftMarket.Models;
+using SepoliaNftMarket.Models.ContractEvents;
+using SepoliaNftMarket.Models.DTO;
+using SepoliaNftMarket.Providers.Etherscan;
+using SepoliaNftMarket.Providers.Moralis;
+using SepoliaNftMarket.Services.EventParser;
+using SepoliaNftMarket.Services.Notifications;
+using SepoliaNftMarket.Services.Sepolia;
 
-namespace MonadNftMarket.Services;
+namespace SepoliaNftMarket.Services;
 
 public class RecordChanges : BackgroundService
 {
-    private readonly IEventParser _eventParser;
-    private readonly IHyperSyncQuery _hyperSyncQuery;
     private readonly ILogger<RecordChanges> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IMonadService _monadService;
-    private readonly IMagicEdenProvider _magicEdenProvider;
-    public RecordChanges(IEventParser eventParser,
-        IHyperSyncQuery hyperSyncQuery,
+    private readonly ISepoliaService _sepoliaService;
+    private readonly IEtherscanProvider _etherscanProvider;
+    private readonly IEventParser _eventParser;
+    private readonly IMoralisProvider _moralisProvider;
+    
+    public RecordChanges(
+        IEtherscanProvider etherscanProvider,
         ILogger<RecordChanges> logger,
         IServiceScopeFactory scopeFactory,
-        IMonadService monadService,
-        IMagicEdenProvider magicEdenProvider)
+        ISepoliaService sepoliaService,
+        IEventParser eventParser,
+        IMoralisProvider moralisProvider)
     {
-        _eventParser = eventParser;
-        _hyperSyncQuery = hyperSyncQuery;
         _logger = logger;
         _scopeFactory = scopeFactory;
-        _monadService = monadService;
-        _magicEdenProvider = magicEdenProvider;
+        _sepoliaService = sepoliaService;
+        _etherscanProvider = etherscanProvider;
+        _eventParser = eventParser;
+        _moralisProvider = moralisProvider;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -48,62 +51,54 @@ public class RecordChanges : BackgroundService
 
                 var nextBlock = await db.Indexer.FirstAsync(i => i.Id == 1, stoppingToken);
 
-                var data = await _hyperSyncQuery.GetLogs(nextBlock.LastProcessedBlock);
+                var data = await _etherscanProvider.GetEventLogsAsync(nextBlock.LastProcessedBlock);
 
-                if (data.Data.Count == 0)
+                if (data.Result.Count == 0)
                 {
                     _logger.LogWarning("Got zero records");
                     await Task.Delay(500, stoppingToken);
                     continue;
                 }
 
-                nextBlock.LastProcessedBlock = data.NextBlock.GetValueOrDefault(0) + 1;
+                nextBlock.LastProcessedBlock = int.Parse(data.Result[0].BlockNumber) + 1;
                 nextBlock.UpdatedAt = DateTime.UtcNow;
 
                 _logger.LogInformation($"NextBlock: {nextBlock.LastProcessedBlock}");
 
                 var parsedEvents = new List<ParsedEvent>();
 
-                foreach (var dt in data.Data)
+                foreach (var dt in data.Result)
                 {
-                    foreach (var log in dt.Logs)
+                    var evt = _eventParser.ParseEvent(dt);
+
+                    if (evt is null) continue;
+
+                    var priceEth = evt switch
                     {
-                        var blk = dt.Blocks.First(b => b.Number == log.BlockNumber);
-                        var tx = dt.Transactions.First(t =>
-                            t.BlockNumber == log.BlockNumber &&
-                            t.TransactionIndex == log.TransactionIndex);
+                        ListingCreatedEvent e => Web3.Convert.FromWei(e.Price),
+                        _ => 0m
+                    };
 
-                        var evt = _eventParser.ParseEvent(log);
-
-                        if (evt is null) continue;
-
-                        decimal priceEth = evt switch
-                        {
-                            ListingCreatedEvent e => Web3.Convert.FromWei(e.Price),
-                            _ => 0m
-                        };
-
-                        parsedEvents.Add(new ParsedEvent
-                        {
-                            Event = evt,
-                            BlockNumber = blk.Number,
-                            BlockHash = blk.Hash!,
-                            BlockTimestamp = DateTimeOffset
-                                .FromUnixTimeSeconds(Convert.ToInt64(blk.Timestamp, 16))
-                                .UtcDateTime,
-                            TransactionHash = tx.Hash!,
-                            TransactionFrom = tx.From!,
-                            TransactionTo = tx.To!,
-                            Price = priceEth,
-                            LogIndex = log.LogIndex,
-                            TransactionIndex = log.TransactionIndex,
-                            LogData = log.Data!,
-                            Topic0 = log.Topic0,
-                            Topic1 = log.Topic1,
-                            Topic2 = log.Topic2,
-                            Topic3 = log.Topic3
-                        });
-                    }
+                    parsedEvents.Add(new ParsedEvent
+                    {
+                        Event = evt,
+                        BlockNumber = long.Parse(dt.BlockNumber),
+                        BlockHash = dt.BlockHash,
+                        BlockTimestamp = DateTimeOffset
+                            .FromUnixTimeSeconds(Convert.ToInt64(dt.TimeStamp, 16))
+                            .UtcDateTime,
+                        TransactionHash = dt.TransactionHash,
+                        TransactionFrom = await _sepoliaService.GetTransactionInitiatorAsync(dt.TransactionHash),
+                        TransactionTo = await _sepoliaService.GetTransactionInitiatorAsync(dt.TransactionHash),
+                        Price = priceEth,
+                        LogIndex = long.Parse(dt.LogIndex),
+                        TransactionIndex = long.Parse(dt.TransactionIndex),
+                        LogData = dt.Data,
+                        Topic0 = dt.Topics[0],
+                        Topic1 = dt.Topics[1],
+                        Topic2 = dt.Topics[2],
+                        Topic3 = dt.Topics[3]
+                    });
                 }
 
                 foreach (var pe in parsedEvents)
@@ -119,16 +114,8 @@ public class RecordChanges : BackgroundService
                                         .AnyAsync(l => l.ListingId == e.Id, cancellationToken: stoppingToken))
                                     break;
 
-                                var mtData = await _magicEdenProvider
-                                    .GetListingMetadataAsync([e.NftContract], [e.TokenId]);
-                                
-                                var key = MakeKey(e.NftContract, e.TokenId);
-
-                                if (!mtData.TryGetValue(key, out var meta))
-                                {
-                                    _logger.LogWarning("No metadata for {Key}", key);
-                                    meta = new();
-                                }
+                                var mtData = await _moralisProvider
+                                    .GetNftMetadataAsync(e.NftContract, e.TokenId.ToString());
                                 
                                 var lst = new Listing
                                 {
@@ -143,11 +130,11 @@ public class RecordChanges : BackgroundService
                                     {
                                         TokenId = e.Id,
                                         NftContractAddress = e.NftContract,
-                                        Kind = meta.Kind,
-                                        Name = meta.Name,
-                                        ImageOriginal = meta.ImageOriginal,
-                                        Description = meta.Description,
-                                        Price = meta.Price ?? 0m,
+                                        Kind = mtData.Kind,
+                                        Name = mtData.Name,
+                                        ImageOriginal = mtData.ImageOriginal,
+                                        Description = mtData.Description,
+                                        Price = mtData.Price ?? 0m,
                                         LastUpdated = DateTime.UtcNow
                                     }
                                 };
@@ -161,7 +148,7 @@ public class RecordChanges : BackgroundService
                                         Timestamp = pe.BlockTimestamp,
                                         TransactionHash = pe.TransactionHash
                                     },
-                                    FromAddress = await _monadService.GetTransactionInitiator(pe.TransactionHash),
+                                    FromAddress = await _sepoliaService.GetTransactionInitiatorAsync(pe.TransactionHash),
                                     ToAddress = string.Empty,
                                     ListingId = e.Id,
                                     TradeId = null,
@@ -218,7 +205,7 @@ public class RecordChanges : BackgroundService
                                         Timestamp = pe.BlockTimestamp,
                                         TransactionHash = pe.TransactionHash
                                     },
-                                    FromAddress = await _monadService.GetTransactionInitiator(pe.TransactionHash),
+                                    FromAddress = await _sepoliaService.GetTransactionInitiatorAsync(pe.TransactionHash),
                                     ToAddress = string.Empty,
                                     ListingId = lst.ListingId,
                                     TradeId = null,
@@ -318,7 +305,7 @@ public class RecordChanges : BackgroundService
                                 break;
                             
                             var tradeData =
-                                await _monadService.GetTradeDataAsync(e.TradeId, cancellationToken: stoppingToken);
+                                await _sepoliaService.GetTradeDataAsync(e.TradeId, cancellationToken: stoppingToken);
                             
                             if(tradeData.To.User.Equals(AddressUtil.ZERO_ADDRESS) ||
                                tradeData.From.User.Equals(AddressUtil.ZERO_ADDRESS))
@@ -553,7 +540,4 @@ public class RecordChanges : BackgroundService
         await Task.WhenAll(notifications.Select(n =>
             notifyService.NotifyAsync(n.Item1, n.Item2, n.Item3, n.Item4)));
     }
-
-    private string MakeKey(string contract, BigInteger tokenId)
-        => $"{contract.ToLowerInvariant()}:{tokenId}";
 }

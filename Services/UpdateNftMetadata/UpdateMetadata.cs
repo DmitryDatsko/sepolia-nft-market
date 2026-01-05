@@ -1,20 +1,20 @@
 ﻿using System.Numerics;
 using Microsoft.EntityFrameworkCore;
-using MonadNftMarket.Context;
-using MonadNftMarket.Providers;
+using SepoliaNftMarket.Context;
+using SepoliaNftMarket.Providers.Moralis;
 
-namespace MonadNftMarket.Services.UpdateNftMetadata;
+namespace SepoliaNftMarket.Services.UpdateNftMetadata;
 
 public class UpdateMetadata : IUpdateMetadata
 {
-    private readonly IMagicEdenProvider _magicEdenProvider;
+    private readonly IMoralisProvider _moralisProvider;
     private readonly ApiDbContext _db;
 
     public UpdateMetadata(
-        IMagicEdenProvider magicEdenProvider,
+        IMoralisProvider moralisProvider,
         ApiDbContext db)
     {
-        _magicEdenProvider = magicEdenProvider;
+        _moralisProvider = moralisProvider;
         _db = db;
     }
     
@@ -22,8 +22,8 @@ public class UpdateMetadata : IUpdateMetadata
         List<string> contractAddresses,
         List<BigInteger> tokenIds)
     {
-        var metadata = await _magicEdenProvider
-            .GetListingMetadataAsync(contractAddresses, tokenIds);
+        var metadata = await _moralisProvider
+            .GetNftsMetadataAsync(contractAddresses, tokenIds);
 
         foreach (var data in contractAddresses.Zip(tokenIds))
         {
@@ -31,7 +31,7 @@ public class UpdateMetadata : IUpdateMetadata
             
             if(!metadata.TryGetValue(key, out var mt))
                 continue;
-
+            
             await _db.Listings
                 .Where(n => n.NftContractAddress == data.First
                             && n.TokenId == data.Second)
@@ -44,7 +44,7 @@ public class UpdateMetadata : IUpdateMetadata
                     .SetProperty(n => n.NftMetadata.LastUpdated, _ => DateTime.UtcNow));
         }
     }
-
-    private string MakeKey(string contract, BigInteger tokenId)
+    
+    private static string MakeKey(string contract, BigInteger tokenId)
         => $"{contract.ToLowerInvariant()}:{tokenId}";
 }

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MonadNftMarket.Models;
+namespace SepoliaNftMarket.Models;
 
 public class Notification
 {

@@ -2,7 +2,7 @@
 using Nethereum.ABI.FunctionEncoding.Attributes;
 using Nethereum.Contracts;
 
-namespace MonadNftMarket.Models.ContractFunctions;
+namespace SepoliaNftMarket.Models.ContractFunctions;
 
 [Function("trades")]
 public class GetTradeFunction : FunctionMessage

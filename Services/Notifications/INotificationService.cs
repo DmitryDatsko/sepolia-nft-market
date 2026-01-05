@@ -1,6 +1,6 @@
-﻿using MonadNftMarket.Models;
+﻿using SepoliaNftMarket.Models;
 
-namespace MonadNftMarket.Services.Notifications;
+namespace SepoliaNftMarket.Services.Notifications;
 
 public interface INotificationService
 {

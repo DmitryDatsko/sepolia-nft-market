@@ -1,9 +1,9 @@
-﻿using MonadNftMarket.Models.DTO.HyperSync;
-using Nethereum.ABI.FunctionEncoding.Attributes;
+﻿using Nethereum.ABI.FunctionEncoding.Attributes;
+using SepoliaNftMarket.Models.DTO.Etherscan;
 
-namespace MonadNftMarket.Services.EventParser;
+namespace SepoliaNftMarket.Services.EventParser;
 
 public interface IEventParser
 {
-    IEventDTO? ParseEvent(Log log);
+    IEventDTO? ParseEvent(EtherscanLog log);
 }

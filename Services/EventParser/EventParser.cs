@@ -1,14 +1,14 @@
 ﻿using Microsoft.Extensions.Options;
-using MonadNftMarket.Configuration;
-using MonadNftMarket.Models.ContractEvents;
-using MonadNftMarket.Models.DTO.HyperSync;
 using Nethereum.ABI.FunctionEncoding;
 using Nethereum.ABI.FunctionEncoding.Attributes;
 using Nethereum.Hex.HexConvertors.Extensions;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
+using SepoliaNftMarket.Configuration;
+using SepoliaNftMarket.Models.ContractEvents;
+using SepoliaNftMarket.Models.DTO.Etherscan;
 
-namespace MonadNftMarket.Services.EventParser;
+namespace SepoliaNftMarket.Services.EventParser;
 
 public class EventParser : IEventParser
 {
@@ -21,8 +21,9 @@ public class EventParser : IEventParser
         IOptions<EnvVariables> env,
         ILogger<EventParser> logger)
     {
-        _contractAddress = env.Value.ContractAddress;
-        _web3 = new Web3(env.Value.MonadRpcUrl);
+        var envValue = env.Value;
+        _contractAddress = envValue.ContractAddress;
+        _web3 = new Web3($"{envValue.SepoliaRpcUrl}{envValue.InfuraApiKey}");
         _logger = logger;
         
         _decoders = new Dictionary<string, Func<FilterLog, IEventDTO>>(StringComparer.OrdinalIgnoreCase);
@@ -46,30 +47,30 @@ public class EventParser : IEventParser
         _decoders[sig] = log => topicDecoder.DecodeTopics<T>(log.Topics, log.Data);
     }
 
-    public IEventDTO? ParseEvent(Log log)
+    public IEventDTO? ParseEvent(EtherscanLog log)
     {
         var topics = new List<object?>();
-        if(!string.IsNullOrEmpty(log.Topic0)) topics.Add(log.Topic0);
-        if(!string.IsNullOrEmpty(log.Topic1)) topics.Add(log.Topic1);
-        if(!string.IsNullOrEmpty(log.Topic2)) topics.Add(log.Topic2);
-        if(!string.IsNullOrEmpty(log.Topic3)) topics.Add(log.Topic3);
-
+        if(!string.IsNullOrEmpty(log.Topics[0])) topics.Add(log.Topics[0]);
+        if(!string.IsNullOrEmpty(log.Topics[1])) topics.Add(log.Topics[1]);
+        if(!string.IsNullOrEmpty(log.Topics[2])) topics.Add(log.Topics[2]);
+        if(!string.IsNullOrEmpty(log.Topics[3])) topics.Add(log.Topics[2]);
+        
         var fl = new FilterLog
         {
             Topics = topics.ToArray(),
             Data = log.Data
         };
 
-        if (string.IsNullOrEmpty(log.Topic0)) return null;
+        if (string.IsNullOrEmpty(log.Topics[0])) return null;
 
-        if (!_decoders.TryGetValue(log.Topic0, out var decoder)) return null;
+        if (!_decoders.TryGetValue(log.Topics[0], out var decoder)) return null;
         try
         {
             return decoder(fl);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Failed to decode event {log.Topic0}: {ex.Message}");
+            _logger.LogError($"Failed to decode event {log.Topics[0]}: {ex.Message}");
             return null;
         }
     }

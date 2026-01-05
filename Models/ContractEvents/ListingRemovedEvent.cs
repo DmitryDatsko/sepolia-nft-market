@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using Nethereum.ABI.FunctionEncoding.Attributes;
 
-namespace MonadNftMarket.Models.ContractEvents;
+namespace SepoliaNftMarket.Models.ContractEvents;
 
 [Event("ListingRemoved")]
 public class ListingRemovedEvent : IEventDTO

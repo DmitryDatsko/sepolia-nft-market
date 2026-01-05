@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
-using MonadNftMarket.Configuration;
+using SepoliaNftMarket.Configuration;
 
-namespace MonadNftMarket.Filters;
+namespace SepoliaNftMarket.Filters;
 
 public class HubAuthorize(ILogger<HubAuthorize> logger) : IHubFilter
 {

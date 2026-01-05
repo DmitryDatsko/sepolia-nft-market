@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MonadNftMarket.Migrations
+namespace SepoliaNftMarket.Migrations
 {
     /// <inheritdoc />
     public partial class initialmigrations : Migration

@@ -1,7 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.SignalR;
 
-namespace MonadNftMarket.Services.Token; 
+namespace SepoliaNftMarket.Services.Token; 
 
 public class WalletUserIdProvider : IUserIdProvider
 {

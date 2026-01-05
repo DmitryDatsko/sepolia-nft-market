@@ -1,6 +1,6 @@
 ﻿using Nethereum.ABI.FunctionEncoding.Attributes;
 
-namespace MonadNftMarket.Models.DTO;
+namespace SepoliaNftMarket.Models.DTO;
 
 public class ParsedEvent
 {

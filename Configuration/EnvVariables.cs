@@ -1,15 +1,17 @@
-namespace MonadNftMarket.Configuration;
+namespace SepoliaNftMarket.Configuration;
 
 public class EnvVariables
 {
     public string JwtTokenSecret { get; set; } = string.Empty;
     public string PostgresConnectionString { get; set; } = string.Empty;
     public string CookieName { get; set; } = string.Empty;
-    public string HyperSyncQueryUrl { get; set; } = string.Empty;
-    public string MonadRpcUrl { get; set; } = string.Empty;
+    public string SepoliaRpcUrl { get; set; } = string.Empty;
+    public string MoralisApiKey { get; set; } = string.Empty;
     public string ContractAddress { get; set; } = string.Empty;
-    public string MagicEdenUserTokens { get; set; } = string.Empty;
-    public string MagicEdenTokensMetadata { get; set; } = string.Empty;
+    public string EtherscanUrl { get; set; } = string.Empty;
+    public string MoralisUrl { get; set; } = string.Empty;
+    public string EtherscanApiKey { get; set; } = string.Empty;
+    public string InfuraApiKey { get; set; } = string.Empty;
     public int BlocksForConfirmation { get; set; } 
 
     public static string ToEnvVariables(string pascalName)

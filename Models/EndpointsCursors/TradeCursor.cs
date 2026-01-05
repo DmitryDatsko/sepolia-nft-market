@@ -1,5 +1,5 @@
-﻿using MonadNftMarket.Models.DTO;
+﻿using SepoliaNftMarket.Models.DTO;
 
-namespace MonadNftMarket.Models.EndpointsCursors;
+namespace SepoliaNftMarket.Models.EndpointsCursors;
 
 public record TradeCursor(Guid LastId, TradeDirection Direction);

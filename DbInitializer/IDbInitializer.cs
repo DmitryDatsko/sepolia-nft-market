@@ -1,4 +1,4 @@
-﻿namespace MonadNftMarket.DbInitializer;
+﻿namespace SepoliaNftMarket.DbInitializer;
 
 public interface IDbInitializer
 {

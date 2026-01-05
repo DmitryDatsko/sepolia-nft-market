@@ -3,9 +3,9 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using MonadNftMarket.Models;
+using SepoliaNftMarket.Models;
 
-namespace MonadNftMarket.Context;
+namespace SepoliaNftMarket.Context;
 
 public class ApiDbContext(DbContextOptions<ApiDbContext> options) : DbContext(options)
 {
@@ -26,28 +26,28 @@ public class ApiDbContext(DbContextOptions<ApiDbContext> options) : DbContext(op
             (a, b) => a == null && b == null || (a != null && b != null && a.SequenceEqual(b)),
             a => a.Aggregate(0, (h, v) => HashCode.Combine(h, v.GetHashCode())),
             a => a.ToList());
-        
+
         modelBuilder.Entity<IndexerState>()
             .HasData(new IndexerState
             {
                 Id = 1,
                 LastProcessedBlock = 0
             });
-        
+
         modelBuilder.Entity<IndexerState>()
             .Property(e => e.LastProcessedBlock)
             .HasConversion(
                 v => v.ToString(),
                 v => BigInteger.Parse(v))
             .HasColumnType("text");
-        
+
         modelBuilder.Entity<Listing>()
             .Property(e => e.ListingId)
             .HasConversion(
                 v => v.ToString(),
                 v => BigInteger.Parse(v))
             .HasColumnType("text");
-        
+
         modelBuilder.Entity<Listing>()
             .Property(e => e.TokenId)
             .HasConversion(
@@ -63,14 +63,14 @@ public class ApiDbContext(DbContextOptions<ApiDbContext> options) : DbContext(op
                         v => BigInteger.Parse(v))
                     .HasColumnType("text");
             });
-        
+
         modelBuilder.Entity<Trade>()
             .Property(e => e.TradeId)
             .HasConversion(
                 v => v.ToString(),
                 v => BigInteger.Parse(v))
             .HasColumnType("text");
-        
+
         modelBuilder.Entity<Trade>()
             .OwnsOne(e => e.From, peer =>
             {
@@ -79,7 +79,7 @@ public class ApiDbContext(DbContextOptions<ApiDbContext> options) : DbContext(op
                     .HasColumnType("text")
                     .Metadata.SetValueComparer(bigIntListComparer);
             });
-        
+
         modelBuilder.Entity<Trade>()
             .OwnsOne(e => e.To, peer =>
             {
@@ -87,7 +87,7 @@ public class ApiDbContext(DbContextOptions<ApiDbContext> options) : DbContext(op
                     .HasConversion(bigIntListConverter)
                     .HasColumnType("text")
                     .Metadata.SetValueComparer(bigIntListComparer);
-                    
+
             });
 
         modelBuilder.Entity<Trade>(entity =>
@@ -136,25 +136,25 @@ public class ApiDbContext(DbContextOptions<ApiDbContext> options) : DbContext(op
         modelBuilder.Entity<Listing>()
             .Property(l => l.Status)
             .HasConversion<int>();
-        
+
         modelBuilder.Entity<Trade>()
             .Property(l => l.Status)
             .HasConversion<int>();
-        
+
         modelBuilder.Entity<History>()
             .Property(l => l.Status)
             .HasConversion<int>();
-        
+
         modelBuilder.Entity<Notification>()
             .Property(n => n.Status)
             .HasConversion<int>();
 
         modelBuilder.Entity<Listing>()
             .HasIndex(l => new { l.Status, l.ListingId });
-        
+
         modelBuilder.Entity<History>()
             .HasIndex(h => new { h.FromAddress, h.Status });
-        
+
         modelBuilder.Entity<History>()
             .HasIndex(h => new { h.FromAddress, h.ToAddress, h.Status });
 
@@ -163,7 +163,7 @@ public class ApiDbContext(DbContextOptions<ApiDbContext> options) : DbContext(op
 
         modelBuilder.Entity<Listing>()
             .OwnsOne<NftMetadata>(l => l.NftMetadata);
-        
+
         base.OnModelCreating(modelBuilder);
     }
 }

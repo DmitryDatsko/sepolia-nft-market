@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using MonadNftMarket.Models;
-using MonadNftMarket.Services.Notifications;
-using MonadNftMarket.Services.Token;
+using SepoliaNftMarket.Models;
+using SepoliaNftMarket.Services.Notifications;
+using SepoliaNftMarket.Services.Token;
 
-namespace MonadNftMarket.Hubs;
+namespace SepoliaNftMarket.Hubs;
 
 [Authorize]
 public class NotificationHub : Hub

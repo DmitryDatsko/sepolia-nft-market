@@ -1,25 +1,25 @@
 ﻿using System.Numerics;
 using Microsoft.Extensions.Options;
-using MonadNftMarket.Configuration;
-using MonadNftMarket.Models.ContractFunctions;
-using MonadNftMarket.Models.ContractOutput;
 using Nethereum.Web3;
 using Polly;
+using SepoliaNftMarket.Configuration;
+using SepoliaNftMarket.Models.ContractFunctions;
+using SepoliaNftMarket.Models.ContractOutput;
 
-namespace MonadNftMarket.Services.Monad;
+namespace SepoliaNftMarket.Services.Sepolia;
 
-public class MonadService : IMonadService
+public class SepoliaService : ISepoliaService
 {
     private static readonly Random Jitterer = new();
     private readonly Web3 _web3;
     private readonly string _contractAddress;
-    private readonly ILogger<MonadService> _logger;
+    private readonly ILogger<SepoliaService> _logger;
     private readonly AsyncPolicy<GetTradeOutput> _genericPolicy;
-    public MonadService(IOptions<EnvVariables> env,
-        ILogger<MonadService> logger)
+    public SepoliaService(IOptions<EnvVariables> env,
+        ILogger<SepoliaService> logger)
     {
-        var monadRpc = env.Value.MonadRpcUrl;
-        _web3 = new Web3(monadRpc);
+        var sepoliaRpc = env.Value.SepoliaRpcUrl;
+        _web3 = new Web3($"{sepoliaRpc}{env.Value.InfuraApiKey}");
         _contractAddress = env.Value.ContractAddress;
         _logger = logger;
 
@@ -46,7 +46,7 @@ public class MonadService : IMonadService
         {
             ct.ThrowIfCancellationRequested();
 
-            var abi = await File.ReadAllTextAsync("Services/Monad/abi.json", ct);
+            var abi = await File.ReadAllTextAsync("Services/Sepolia/abi.json", ct);
             var contract = _web3.Eth.GetContract(abi, _contractAddress);
 
             var func = contract.GetFunction<GetTradeFunction>();
@@ -75,10 +75,17 @@ public class MonadService : IMonadService
         }, cancellationToken);
     }
 
-    public async Task<string> GetTransactionInitiator(string txHash)
+    public async Task<string> GetTransactionInitiatorAsync(string txHash)
     {
         var transaction = await _web3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(txHash);
 
         return transaction.From;
+    }
+    
+    public async Task<string> GetTransactionReciverAsync(string txHash)
+    {
+        var transaction = await _web3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(txHash);
+
+        return transaction.To;
     }
 }

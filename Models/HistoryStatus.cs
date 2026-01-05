@@ -1,4 +1,4 @@
-﻿namespace MonadNftMarket.Models;
+﻿namespace SepoliaNftMarket.Models;
 
 public enum HistoryStatus
 {

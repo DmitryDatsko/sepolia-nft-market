@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MonadNftMarket.Context;
+using SepoliaNftMarket.Context;
 
-namespace MonadNftMarket.DbInitializer;
+namespace SepoliaNftMarket.DbInitializer;
 
 public class DbInitializer(IDbContextFactory<ApiDbContext> context) : IDbInitializer
 {

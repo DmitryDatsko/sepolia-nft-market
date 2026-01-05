@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace MonadNftMarket.Services.UpdateNftMetadata;
+namespace SepoliaNftMarket.Services.UpdateNftMetadata;
 
 public interface IUpdateMetadata
 {

@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace MonadNftMarket.Services;
+namespace SepoliaNftMarket.Services;
 
 public static class CursorService
 {

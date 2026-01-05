@@ -1,4 +1,4 @@
-﻿namespace MonadNftMarket.Models.EndpointsCursors;
+﻿namespace SepoliaNftMarket.Models.EndpointsCursors;
 
 public record MarketListingCursor(
     Guid LastId,
