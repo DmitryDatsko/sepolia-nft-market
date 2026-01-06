@@ -1,20 +1,20 @@
 ﻿using System.Numerics;
 using Microsoft.EntityFrameworkCore;
 using SepoliaNftMarket.Context;
-using SepoliaNftMarket.Providers.Moralis;
+using SepoliaNftMarket.Providers.Alchemy;
 
 namespace SepoliaNftMarket.Services.UpdateNftMetadata;
 
 public class UpdateMetadata : IUpdateMetadata
 {
-    private readonly IMoralisProvider _moralisProvider;
+    private readonly IAlchemyProvider _alchemyProvider;
     private readonly ApiDbContext _db;
 
     public UpdateMetadata(
-        IMoralisProvider moralisProvider,
+        IAlchemyProvider alchemyProvider,
         ApiDbContext db)
     {
-        _moralisProvider = moralisProvider;
+        _alchemyProvider = alchemyProvider;
         _db = db;
     }
     
@@ -22,7 +22,7 @@ public class UpdateMetadata : IUpdateMetadata
         List<string> contractAddresses,
         List<BigInteger> tokenIds)
     {
-        var metadata = await _moralisProvider
+        var metadata = await _alchemyProvider
             .GetNftsMetadataAsync(contractAddresses, tokenIds);
 
         foreach (var data in contractAddresses.Zip(tokenIds))

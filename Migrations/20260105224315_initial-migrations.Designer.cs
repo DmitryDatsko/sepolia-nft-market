@@ -14,7 +14,7 @@ using SepoliaNftMarket.Context;
 namespace SepoliaNftMarket.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20260105005314_initial-migrations")]
+    [Migration("20260105224315_initial-migrations")]
     partial class initialmigrations
     {
         /// <inheritdoc />

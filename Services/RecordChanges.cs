@@ -6,8 +6,8 @@ using SepoliaNftMarket.Context;
 using SepoliaNftMarket.Models;
 using SepoliaNftMarket.Models.ContractEvents;
 using SepoliaNftMarket.Models.DTO;
+using SepoliaNftMarket.Providers.Alchemy;
 using SepoliaNftMarket.Providers.Etherscan;
-using SepoliaNftMarket.Providers.Moralis;
 using SepoliaNftMarket.Services.EventParser;
 using SepoliaNftMarket.Services.Notifications;
 using SepoliaNftMarket.Services.Sepolia;
@@ -21,7 +21,7 @@ public class RecordChanges : BackgroundService
     private readonly ISepoliaService _sepoliaService;
     private readonly IEtherscanProvider _etherscanProvider;
     private readonly IEventParser _eventParser;
-    private readonly IMoralisProvider _moralisProvider;
+    private readonly IAlchemyProvider _alchemyProvider;
     
     public RecordChanges(
         IEtherscanProvider etherscanProvider,
@@ -29,14 +29,14 @@ public class RecordChanges : BackgroundService
         IServiceScopeFactory scopeFactory,
         ISepoliaService sepoliaService,
         IEventParser eventParser,
-        IMoralisProvider moralisProvider)
+        IAlchemyProvider alchemyProvider)
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
         _sepoliaService = sepoliaService;
         _etherscanProvider = etherscanProvider;
         _eventParser = eventParser;
-        _moralisProvider = moralisProvider;
+        _alchemyProvider = alchemyProvider;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -114,7 +114,7 @@ public class RecordChanges : BackgroundService
                                         .AnyAsync(l => l.ListingId == e.Id, cancellationToken: stoppingToken))
                                     break;
 
-                                var mtData = await _moralisProvider
+                                var mtData = await _alchemyProvider
                                     .GetNftMetadataAsync(e.NftContract, e.TokenId.ToString());
                                 
                                 var lst = new Listing

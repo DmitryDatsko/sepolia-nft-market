@@ -6,10 +6,10 @@ public class EnvVariables
     public string PostgresConnectionString { get; set; } = string.Empty;
     public string CookieName { get; set; } = string.Empty;
     public string SepoliaRpcUrl { get; set; } = string.Empty;
-    public string MoralisApiKey { get; set; } = string.Empty;
+    public string AlchemyApiKey { get; set; } = string.Empty;
     public string ContractAddress { get; set; } = string.Empty;
     public string EtherscanUrl { get; set; } = string.Empty;
-    public string MoralisUrl { get; set; } = string.Empty;
+    public string AlchemyUrl { get; set; } = string.Empty;
     public string EtherscanApiKey { get; set; } = string.Empty;
     public string InfuraApiKey { get; set; } = string.Empty;
     public int BlocksForConfirmation { get; set; } 

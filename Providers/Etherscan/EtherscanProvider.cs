@@ -2,6 +2,7 @@ using System.Numerics;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
+using Nethereum.Hex.HexTypes;
 using Nethereum.Web3;
 using SepoliaNftMarket.Configuration;
 using SepoliaNftMarket.Models.DTO.Etherscan;
@@ -54,5 +55,16 @@ public class EtherscanProvider : IEtherscanProvider
             new JsonSerializerOptions { PropertyNameCaseInsensitive  = true });
         
         return data ??  new();
+    }
+
+    public async Task<DateTime> GetBlockMintTimeAsync(BigInteger blockNumber)
+    {
+        var blockTx = await _web3.Eth.Blocks.
+            GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(blockNumber));
+
+        var unixTime = (long)blockTx.Timestamp.Value;
+        var utcTime = DateTimeOffset.FromUnixTimeSeconds(unixTime).UtcDateTime;
+        
+        return utcTime;
     }
 }
