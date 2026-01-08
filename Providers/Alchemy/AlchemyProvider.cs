@@ -42,32 +42,35 @@ public class AlchemyProvider : IAlchemyProvider
             ["tokenId"] = tokenId,
             ["refreshCache"] = "false"
         };
-        
+    
         var requestUrl = QueryHelpers.AddQueryString($"{_alchemyUrl}{_alchemyApiKey}/getNFTMetadata", query);
         using var req = new HttpRequestMessage(HttpMethod.Get, requestUrl);
         using var resp = await _httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
-        
+    
+        _logger.LogInformation($"Metadata request: {requestUrl}");
+    
         resp.EnsureSuccessStatusCode();
-        
         var content = await resp.Content.ReadAsStringAsync();
+    
+        _logger.LogInformation($"Metadata response: {content}");
 
-        var settings = new JsonSerializerSettings
-        {
-            NullValueHandling = NullValueHandling.Ignore,
-            MissingMemberHandling = MissingMemberHandling.Ignore
-        };
-        var data = JsonConvert.DeserializeObject<AlchemyNftMetadata>(content, settings);
+        var json = Newtonsoft.Json.Linq.JObject.Parse(content);
 
-        if (data == null) return new();
+        var name = json["name"]?.ToString() ?? string.Empty;
+        var description = json["description"]?.ToString() ?? string.Empty;
+        var tokenType = json["tokenType"]?.ToString() ?? string.Empty;
+        var imageUrl = json["image"]?["cachedUrl"]?.ToString() 
+                       ?? json["image"]?["originalUrl"]?.ToString() 
+                       ?? string.Empty;
 
         return new NftMetadata
         {
             TokenId = BigInteger.Parse(tokenId),
             NftContractAddress = address,
-            Kind = data.ContractMetadata.TokenType,
-            Name = data.MetadataNftMetadata.Name,
-            ImageOriginal = GetImageUrl(data.MetadataNftMetadata.Image),
-            Description = data.Description
+            Kind = tokenType,
+            Name = name,
+            ImageOriginal = GetImageUrl(imageUrl),
+            Description = description
         };
     }
 

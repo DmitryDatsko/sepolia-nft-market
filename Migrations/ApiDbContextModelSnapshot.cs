@@ -104,7 +104,7 @@ namespace SepoliaNftMarket.Migrations
                         new
                         {
                             Id = 1,
-                            LastProcessedBlock = "0",
+                            LastProcessedBlock = "9997316",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         });
                 });

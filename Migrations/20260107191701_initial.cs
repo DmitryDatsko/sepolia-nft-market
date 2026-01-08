@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace SepoliaNftMarket.Migrations
 {
     /// <inheritdoc />
-    public partial class initialmigrations : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -136,7 +136,7 @@ namespace SepoliaNftMarket.Migrations
             migrationBuilder.InsertData(
                 table: "indexer",
                 columns: new[] { "id", "last_processed_block", "updated_at" },
-                values: new object[] { 1, "0", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) });
+                values: new object[] { 1, "9997316", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) });
 
             migrationBuilder.CreateIndex(
                 name: "ix_history_from_address_status",

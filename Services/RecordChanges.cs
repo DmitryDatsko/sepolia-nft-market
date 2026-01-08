@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using Microsoft.EntityFrameworkCore;
+using Nethereum.Hex.HexTypes;
 using Nethereum.Util;
 using Nethereum.Web3;
 using SepoliaNftMarket.Context;
@@ -51,18 +52,20 @@ public class RecordChanges : BackgroundService
 
                 var nextBlock = await db.Indexer.FirstAsync(i => i.Id == 1, stoppingToken);
 
-                var data = await _etherscanProvider.GetEventLogsAsync(nextBlock.LastProcessedBlock);
-
+                var data = await _etherscanProvider
+                    .GetEventLogsAsync(nextBlock.LastProcessedBlock);
+                
                 if (data.Result.Count == 0)
                 {
                     _logger.LogWarning("Got zero records");
-                    await Task.Delay(500, stoppingToken);
+                    await Task.Delay(5000, stoppingToken);
                     continue;
                 }
-
-                nextBlock.LastProcessedBlock = int.Parse(data.Result[0].BlockNumber) + 1;
+                
+                nextBlock.LastProcessedBlock = HexBigIntegerStringToBigInteger(data.Result[0].BlockNumber) + 1;
                 nextBlock.UpdatedAt = DateTime.UtcNow;
-
+                await db.SaveChangesAsync(stoppingToken);
+                
                 _logger.LogInformation($"NextBlock: {nextBlock.LastProcessedBlock}");
 
                 var parsedEvents = new List<ParsedEvent>();
@@ -82,7 +85,7 @@ public class RecordChanges : BackgroundService
                     parsedEvents.Add(new ParsedEvent
                     {
                         Event = evt,
-                        BlockNumber = long.Parse(dt.BlockNumber),
+                        BlockNumber = (long)HexBigIntegerStringToBigInteger(dt.BlockNumber),
                         BlockHash = dt.BlockHash,
                         BlockTimestamp = DateTimeOffset
                             .FromUnixTimeSeconds(Convert.ToInt64(dt.TimeStamp, 16))
@@ -91,13 +94,13 @@ public class RecordChanges : BackgroundService
                         TransactionFrom = await _sepoliaService.GetTransactionInitiatorAsync(dt.TransactionHash),
                         TransactionTo = await _sepoliaService.GetTransactionInitiatorAsync(dt.TransactionHash),
                         Price = priceEth,
-                        LogIndex = long.Parse(dt.LogIndex),
-                        TransactionIndex = long.Parse(dt.TransactionIndex),
+                        LogIndex = Convert.ToInt64(dt.LogIndex, 16),
+                        TransactionIndex = Convert.ToInt64(dt.TransactionIndex, 16),
                         LogData = dt.Data,
-                        Topic0 = dt.Topics[0],
-                        Topic1 = dt.Topics[1],
-                        Topic2 = dt.Topics[2],
-                        Topic3 = dt.Topics[3]
+                        Topic0 = GetTopic(dt.Topics, 0),
+                        Topic1 = GetTopic(dt.Topics, 1),
+                        Topic2 = GetTopic(dt.Topics, 2),
+                        Topic3 = GetTopic(dt.Topics, 3)
                     });
                 }
 
@@ -441,7 +444,7 @@ public class RecordChanges : BackgroundService
                     }
                 }
             }
-
+            
             await Task.Delay(200, cancellationToken: stoppingToken);
         }
         catch (OperationCanceledException ex)
@@ -540,4 +543,10 @@ public class RecordChanges : BackgroundService
         await Task.WhenAll(notifications.Select(n =>
             notifyService.NotifyAsync(n.Item1, n.Item2, n.Item3, n.Item4)));
     }
+
+    string? GetTopic(List<string>? t, int idx) =>
+        (t != null && t.Count > idx) ? t[idx] : null;
+
+    private BigInteger HexBigIntegerStringToBigInteger(string hex)
+        => new HexBigInteger(hex).Value;
 }

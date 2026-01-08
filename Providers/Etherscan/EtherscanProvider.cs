@@ -17,15 +17,18 @@ public class EtherscanProvider : IEtherscanProvider
     private readonly string _baseUrl;
     private readonly int _confirmationBlocks;
     private readonly string _contractAddress;
+    private readonly ILogger<EtherscanProvider> _logger;
     
     public EtherscanProvider(
         IHttpClientFactory factory,
-        IOptions<EnvVariables> env)
+        IOptions<EnvVariables> env,
+        ILogger<EtherscanProvider> logger)
     {
         _httpClient = factory.CreateClient();
         var envValue = env.Value;
         _web3 = new Web3($"{envValue.SepoliaRpcUrl}{envValue.InfuraApiKey}");
         
+        _logger = logger;
         _apiKey = envValue.EtherscanApiKey;
         _baseUrl = envValue.EtherscanUrl;
         _confirmationBlocks = envValue.BlocksForConfirmation;
@@ -45,10 +48,13 @@ public class EtherscanProvider : IEtherscanProvider
         };
         
         var requestUrl = QueryHelpers.AddQueryString(_baseUrl, query);
+        
+        _logger.LogInformation($"Getting events from {requestUrl}");
 
         using var req = new HttpRequestMessage(HttpMethod.Get, requestUrl);
         using var resp = await _httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
 
+        _logger.LogInformation($"Logs response: {resp.Content.ReadAsStringAsync().Result}");
         resp.EnsureSuccessStatusCode();
         
         var data = JsonSerializer.Deserialize<EventLog>(await resp.Content.ReadAsStringAsync(),

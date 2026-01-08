@@ -41,20 +41,28 @@ public class EventParser : IEventParser
     {
         var ev = _web3.Eth.GetEvent<T>(_contractAddress);
         var sig = ev.EventABI.Sha3Signature.EnsureHexPrefix();
+        _logger.LogInformation($"Event sig: {sig}");
 
         var topicDecoder = new EventTopicDecoder();
         
         _decoders[sig] = log => topicDecoder.DecodeTopics<T>(log.Topics, log.Data);
     }
 
-    public IEventDTO? ParseEvent(EtherscanLog log)
+    public IEventDTO? ParseEvent(EtherscanLog? log)
     {
+        if (log?.Topics == null || log.Topics.Count == 0)
+            return null;
+
         var topics = new List<object?>();
-        if(!string.IsNullOrEmpty(log.Topics[0])) topics.Add(log.Topics[0]);
-        if(!string.IsNullOrEmpty(log.Topics[1])) topics.Add(log.Topics[1]);
-        if(!string.IsNullOrEmpty(log.Topics[2])) topics.Add(log.Topics[2]);
-        if(!string.IsNullOrEmpty(log.Topics[3])) topics.Add(log.Topics[2]);
-        
+    
+        for (int i = 0; i < log.Topics.Count && i < 4; i++)
+        {
+            if (!string.IsNullOrEmpty(log.Topics[i]))
+            {
+                topics.Add(log.Topics[i]);
+            }
+        }
+
         var fl = new FilterLog
         {
             Topics = topics.ToArray(),
@@ -63,7 +71,12 @@ public class EventParser : IEventParser
 
         if (string.IsNullOrEmpty(log.Topics[0])) return null;
 
-        if (!_decoders.TryGetValue(log.Topics[0], out var decoder)) return null;
+        if (!_decoders.TryGetValue(log.Topics[0], out var decoder))
+        {
+            _logger.LogDebug($"No decoder found for event signature: {log.Topics[0]}");
+            return null;
+        }
+    
         try
         {
             return decoder(fl);
