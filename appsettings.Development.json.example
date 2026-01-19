@@ -7,5 +7,10 @@
   },
   "ConnectionStrings": {
     "DefaultConnection": ""
-  }
+  },
+  "EnvVariables": {
+      "EtherscanApiKey": "",
+      "InfuraApiKey": "",
+      "AlchemyApiKey": ""
+    }
 }
